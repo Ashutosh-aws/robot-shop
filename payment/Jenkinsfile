@@ -1,0 +1,38 @@
+pipeline {
+    agent any
+    environment {
+        
+        reg_address = "421320058418.dkr.ecr.ap-south-1.amazonaws.com"
+        repo = "robot-shop-ashutosh"
+        
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/Ashutosh-aws/robot-shop.git'
+                }
+        }
+        
+        stage('build docker'){
+            steps{
+          
+                sh  'docker build -t payment/robot-shop payment/'
+                sh 'docker tag payment/robot-shop ${reg_address}/${repo}:payment-build'
+                 }
+        }
+        stage('ECR logging'){
+                steps{
+                 sh 'aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 421320058418.dkr.ecr.ap-south-1.amazonaws.com'
+                  }
+        }
+        
+        stage('docker push'){
+                 steps{
+                     sh 'docker push ${reg_address}/${repo}:payment-build'
+            
+                    }
+        }
+    }
+}
+
